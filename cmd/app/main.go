@@ -1,32 +1,30 @@
-package main 
+package main
 
 import (
 	"fmt"
 	"net"
 	"os"
-	"strings"
+	handlers "github.com/YacineMK/doku/internal/handlers"
 )
 
 func main() {
 	fmt.Println("Hello, Doku!")
 
-	l,err := net.Listen("tcp", ":4000")
+	listener, err := net.Listen("tcp", ":4000")
 	if err != nil {
-		fmt.Println("Failed to bind to port");
+		fmt.Println("Failed to bind to port")
 		os.Exit(1)
 	}
- 
-	conn,err := l.Accept()
-	if err != nil {
-		fmt.Println("Error accepting connection: ", err.Error())
-		os.Exit(1)
-	}
-	req := make([]byte , 1024)
-	conn.Read(req)
-	if !strings.HasPrefix(string(req), "GET / HTTP/1.1") {
-		conn.Write([]byte("HTTP/1.1 404 Not Found\r\n\r\n"))
-		return
-	}
+	defer listener.Close()
 
-	conn.Write([]byte("HTTP/1.1 200 OK\r\n\r\n"))
+	fmt.Println("Listening on port 4000...")
+
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			fmt.Println("Error accepting connection:", err)
+			continue
+		}
+		go handlers.HandleConnection(conn)
+	}
 }

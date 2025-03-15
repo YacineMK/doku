@@ -1,4 +1,6 @@
-type Request struct {
+package types
+
+type HttpRequest struct {
 	Method  string
 	Path    string
 	Headers map[string]string
